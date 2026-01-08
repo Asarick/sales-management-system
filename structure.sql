@@ -41,3 +41,26 @@ CREATE TABLE Orders (
     total_amount REAL NOT NULL CHECK (total_amount >= 0),
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE CASCADE
 );
+
+CREATE TABLE Order_Items (
+    order_item_id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    price REAL NOT NULL CHECK (price > 0),
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE RESTRICT
+);
+
+CREATE TABLE Payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    payment_method VARCHAR(20) NOT NULL
+        CHECK (payment_method IN ('Cash', 'Card', 'Mobile Money', 'Bank Transfer')),
+    amount DECIMAL(10,2) NOT NULL CHECK (amount > 0),
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'Completed'
+        CHECK (status IN ('Pending', 'Completed', 'Failed', 'Refunded')),
+    transaction_id VARCHAR(100),
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
