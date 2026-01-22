@@ -71,3 +71,32 @@ CREATE TABLE Payments (
     transaction_id VARCHAR(100),
     FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+
+DELIMITER //
+
+CREATE TRIGGER after_order_item_insert
+AFTER INSERT ON order_items
+FOR EACH ROW
+BEGIN
+    UPDATE Products 
+    SET stock = stock - NEW.quantity
+    WHERE product_id = NEW.product_id;
+END;
+//
+
+CREATE TRIGGER auto_generate_warranty
+AFTER INSERT ON order_items
+FOR EACH ROW
+BEGIN
+    INSERT INTO warranties (order_item_id, warranty_period_months, start_date, end_date)
+    VALUES (
+        NEW.order_item_id, 
+        12, 
+        CURDATE(), 
+        DATE_ADD(CURDATE(), INTERVAL 1 YEAR)
+    );
+END;
+//
+
+DELIMITER ;
