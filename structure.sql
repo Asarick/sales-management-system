@@ -10,17 +10,17 @@ CREATE TABLE Categories (
     name TEXT NOT NULL UNIQUE,
     description TEXT
 );
-CREATE TABLE Warranties (
+CREATE TABLE warranties (
     warranty_id INT AUTO_INCREMENT PRIMARY KEY,
     order_item_id INT NOT NULL,
     warranty_period_months INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    terms TEXT,
     FOREIGN KEY (order_item_id)
-        REFERENCES Order_Items(order_item_id)
+        REFERENCES order_items(order_item_id)
         ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 
 CREATE TABLE Products (
     product_id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -42,15 +42,22 @@ CREATE TABLE Orders (
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE CASCADE
 );
 
-CREATE TABLE Order_Items (
-    order_item_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    order_id INTEGER NOT NULL,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL CHECK (quantity > 0),
-    price REAL NOT NULL CHECK (price > 0),
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE RESTRICT
-);
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    price DECIMAL(10,2) NOT NULL CHECK (price > 0),
+    CONSTRAINT fk_order_items_order
+        FOREIGN KEY (order_id)
+        REFERENCES Orders(order_id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_order_items_product
+        FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
 
 CREATE TABLE Payments (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
