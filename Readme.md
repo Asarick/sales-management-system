@@ -79,27 +79,87 @@ The database consists of the following tables:
   - `end_date` (DATE, NOT NULL)
   - `terms` (TEXT)
 
-## Setup Instructions
-1. **Prerequisites**:
-   - MySQL or MariaDB server installed.
-   - A database client (e.g., MySQL Workbench, phpMyAdmin, or command-line client).
+# Entity Relationships
 
-2. **Create the Database**:
-   - Create a new database: `CREATE DATABASE sales_management_system;`
-   - Use the database: `USE sales_management_system;`
+**Purpose**: The tables are connected using foreign key constraints to model real-world sales workflows and enforce referential integrity.
+### 1. Customers → Orders (One-to-Many)
+ - A single customer can place multiple orders.
+ - Each order belongs to exactly one customer.
 
-3. **Run the Schema**:
-   - Execute the provided SQL scripts to create the tables (in the order: Customers, Categories, Products, Orders, Order_Items, Payments, Warranties).
+# Foreign Key Relationship:
+` Orders.customer_id` → `Customers.customer_id`
 
-4. **Populate with Dummy Data**:
-   - Run the INSERT statements provided in the project files to add sample data. Ensure you insert in dependency order to avoid foreign key errors:
-     - Customers
-     - Categories
-     - Products
-     - Orders
-     - Order_Items
-     - Warranties
-     - Payments
+### 2. Categories → Products (One-to-Many)
+- A category can contain multiple products.
+- Each product belongs to exactly one category.
+
+# Foreign Key Relationship:
+` Products.category_id` → `Categories.category_id`
+
+### 3. Orders → Order_Items (One-to-Many)
+- An order can contain multiple order items.
+- Each order item belongs to exactly one order.
+
+# Foreign Key Relationship:
+ `Order_Items.order_id` → `Orders.order_id`
+
+### 4. Products → Order_Items (One-to-Many)
+
+- A product can appear in multiple order items.
+- Each order item references one product.
+
+# Foreign Key Relationship:
+`Order_Items.product_id` → `Products.product_id`
+
+### 5. Orders → Payments (One-to-Many)
+ - An order can have one or more payment records.
+ - Each payment belongs to exactly one order.
+
+# Foreign Key Relationship:
+`Payments.order_id` → `Orders.order_id`
+This allows support for partial payments, installments, and refunds.
+
+### 6. Order_Items → Warranties (One-to-One or One-to-Many)
+ - Each order item can have an associated warranty.
+ - A warranty must reference a valid order item.
+
+# Foreign Key Relationship:
+`Warranties.order_item_id` → `Order_Items.order_item_id`
+
+ - This ensures warranties are tied to specific purchased items.
+
+### Entity Relationship Flow
+
+The logical flow of the system is:
+ - Customer → places → Order → contains → Order_Items → reference → Products → belong to → Categories
+
+ - Order → processed by → Payments
+
+ - Order_Items → may include → Warranties
+
+## Referential Integrity
+ - All foreign key constraints ensure:
+ - No orphan records
+ - Consistent transactional data
+ - Accurate modeling of real-world sales processes
+
+Usage
+Querying Data
+
+# List all customers:
+`SELECT * FROM Customers;`
+
+# View orders with customer details:
+
+`SELECT o.order_id, c.name, o.total_amount`
+`FROM Orders o`
+`JOIN Customers c ON o.customer_id = c.customer_id;`
+
+# Testing
+ - Dummy data includes sample orders, payments, and warranties for validation.
+
+# Maintenance
+- Update stock levels, add new products, process refunds, and manage warranties as needed.
 
 ## Usage
 - **Querying Data**: Use standard SQL queries to retrieve information, e.g.:
@@ -108,10 +168,6 @@ The database consists of the following tables:
 - **Testing**: The dummy data includes sample orders, payments, and warranties for validation.
 - **Maintenance**: Update stock levels, add new products, or process refunds as needed.
 
-## Files in the Project
-- `schema.sql`: Contains the CREATE TABLE statements for all tables.
-- `dummy_data.sql`: Contains INSERT statements for populating tables with sample data.
-- `README.md`: This file, explaining the project and setup.
 
 ## Contributing
 - Fork the repository and submit pull requests for improvements.

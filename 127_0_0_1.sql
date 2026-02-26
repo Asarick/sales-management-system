@@ -454,3 +454,38 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Create CustomerPoints table to store loyalty points for each customer
+CREATE TABLE CustomerPoints (
+  customer_id INT NOT NULL,
+  points INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (customer_id),
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
+);
+
+DELIMITER $$
+
+-- Create a trigger to calculate and update loyalty points
+CREATE TRIGGER after_order_status_update
+AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+  -- Check if the status changed to 'Completed'
+  IF NEW.status = 'Completed' AND OLD.status != 'Completed' THEN
+    DECLARE remaining_days INT;
+    DECLARE earned_points INT;
+
+    -- Calculate the remaining days in the current month
+    SET remaining_days = DAY(LAST_DAY(CURDATE())) - DAY(CURDATE());
+
+    -- Calculate points earned
+    SET earned_points = FLOOR(remaining_days / 8);
+
+    -- Update the CustomerPoints table
+    INSERT INTO CustomerPoints (customer_id, points)
+    VALUES (NEW.customer_id, earned_points)
+    ON DUPLICATE KEY UPDATE points = points + earned_points;
+  END IF;
+END$$
+
+DELIMITER ;
